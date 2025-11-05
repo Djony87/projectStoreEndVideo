@@ -1,15 +1,22 @@
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
 
 import app.keyboards  as kb
 from app.database.requests import set_user, get_item
 
 router = Router()
 
+class Reg(StatesGroup):
+    tg_id = State()
+    user_name = State()
+    user_soname = State()
+    phone_number = State()
+
 @router.message(CommandStart())
 async def cmd_start(message: Message):
-    await set_user(message.from_user.id, message.from_user.first_name)
     await message.answer(f'{message.from_user.first_name},\n'
                         f'Вас приветствует приевествует бот \n'
                         f'    интернет-магазина одежды.',
@@ -49,3 +56,34 @@ async def item_hendler(callback: CallbackQuery):
     await callback.answer('')
     await callback.message.edit_text(f'{item.name}\n\n{item.description}\n\nЦена: {item.price}',
                                   reply_markup=await kb.back_category(item.category))
+
+
+@router.callback_query(F.data == 'reg')
+async def add_data(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await state.set_state(Reg.phone_number)
+    await callback.message.answer('Для регистрации введите номер телефона')
+
+
+@router.message(Reg.phone_number)
+async def add_user(message: Message, state: FSMContext):
+    # Собираем все данные в состояние
+    await state.update_data(phone_number=message.text)
+    await state.update_data(tg_id=message.from_user.id)
+    await state.update_data(user_name=message.from_user.first_name)
+    await state.update_data(user_soname=message.from_user.last_name)
+
+    # Получаем данные из состояния с другим именем переменной
+    user_data = await state.get_data()
+
+    # Сохраняем пользователя
+    await set_user(
+        tg_id=user_data['tg_id'],
+        user_name=user_data['user_name'],
+        user_soname=user_data['user_soname'],
+        phone_number=user_data['phone_number']
+    )
+
+    await state.clear()
+    await message.answer("Регистрация завершена успешно! ✅")
+    await state.clear()

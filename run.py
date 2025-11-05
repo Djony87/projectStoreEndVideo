@@ -5,11 +5,11 @@ from aiogram import Bot, Dispatcher
 
 from config import TOKEN
 from app.hendlers import router
-from app.database.models import async_main
-
+from app.database.models import async_main #, add_columns_to_users
 
 async def main():
     await async_main()
+    #await add_columns_to_users()
     bot = Bot(token=TOKEN)
     dp = Dispatcher()
     dp.include_router(router)

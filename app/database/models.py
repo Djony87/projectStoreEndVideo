@@ -1,4 +1,4 @@
-from sqlalchemy import String, BigInteger, ForeignKey
+from sqlalchemy import String, BigInteger, ForeignKey, Integer, text
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 
@@ -20,7 +20,8 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tg_id: Mapped[int] = mapped_column()
     user_name: Mapped[str] = mapped_column(String(25))
-
+    user_soname: Mapped[str] = mapped_column(String(25), nullable=True)
+    phone_number: Mapped[str] = mapped_column(String(15), nullable=True)
 
 class Category(Base):
     __tablename__ = 'categories'
@@ -42,3 +43,15 @@ class Item(Base):
 async def async_main():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+# ------- Добавление новых столбцов в таблицу
+# async def add_columns_to_users():
+#     async with engine.begin() as conn:
+#         await conn.execute(text("""
+#             ALTER TABLE users
+#             ADD COLUMN user_soname VARCHAR(25)
+#         """))
+#         await conn.execute(text("""
+#             ALTER TABLE users
+#             ADD COLUMN phone_number VARCHAR(15)
+#         """))
