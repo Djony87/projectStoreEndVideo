@@ -23,3 +23,8 @@ async def get_item_by_category(category_id):
 async def get_item(item_id):
     async with async_session() as session:
         return await session.scalar(select(Item).where(Item.id == item_id))
+
+async def get_all_user():
+    async with async_session() as session:
+        result =  await session.scalars(select(User.user_name))
+        return result.all()

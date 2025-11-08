@@ -38,20 +38,21 @@ class Item(Base):
     name: Mapped[str] = mapped_column(String(25))
     description: Mapped[str] = mapped_column(String(512))
     price: Mapped[int]
+    photo: Mapped[str] = mapped_column(String(512), nullable=True)
 
 
 async def async_main():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-# ------- Добавление новых столбцов в таблицу
+#------- Добавление новых столбцов в таблицу
 # async def add_columns_to_users():
 #     async with engine.begin() as conn:
 #         await conn.execute(text("""
-#             ALTER TABLE users
-#             ADD COLUMN user_soname VARCHAR(25)
+#             ALTER TABLE items
+#             ADD COLUMN photo VARCHAR(512)
 #         """))
-#         await conn.execute(text("""
-#             ALTER TABLE users
-#             ADD COLUMN phone_number VARCHAR(15)
-#         """))
+        # await conn.execute(text("""
+        #     ALTER TABLE users
+        #     ADD COLUMN phone_number VARCHAR(15)
+        # """))

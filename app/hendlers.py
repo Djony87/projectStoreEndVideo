@@ -5,7 +5,9 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
 import app.keyboards  as kb
-from app.database.requests import set_user, get_item
+from app.admins.admin_keyboadrs import kb_admin
+from app.database.requests import set_user, get_item, get_all_user
+from config import ID_ADMIN
 
 router = Router()
 
@@ -24,8 +26,19 @@ async def cmd_start(message: Message):
 
 @router.message(Command('help'))
 async def cmd_help(message: Message):
-    await message.answer('Это команда help',
+    await message.answer(f'Это команда help, ваш id: {message.from_user.id}',
                          reply_markup=ReplyKeyboardRemove())
+
+
+@router.callback_query(F.data == 'admin')
+async def admin_panel(callback: CallbackQuery):
+    id_user = callback.from_user.id
+    if id_user in ID_ADMIN:
+        await callback.message.edit_text('Вы вошли как администратор',
+                                      reply_markup=kb_admin)
+    else:
+        await callback.message.edit_text('У вас нет доступа к ресурсам')
+
 
 @router.callback_query(F.data == 'start')
 async def callback_start(callback: CallbackQuery):
@@ -87,3 +100,12 @@ async def add_user(message: Message, state: FSMContext):
     await state.clear()
     await message.answer("Регистрация завершена успешно! ✅")
     await state.clear()
+
+
+@router.callback_query(F.data == 'all_users')
+async def all_users(callback: CallbackQuery):
+    await callback.answer()
+    users = await get_all_user()
+    for user in users:
+        await callback.message.answer(f'Имя пользователя: {user}')
+    await callback.message.answer(f'Всего {len(users)} пользователей')
