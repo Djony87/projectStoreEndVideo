@@ -5,9 +5,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
 import app.keyboards  as kb
-from app.admins.admin_keyboadrs import kb_admin
-from app.database.requests import set_user, get_item, get_all_user
-from config import ID_ADMIN
+from app.database.requests import set_user, get_item
 
 router = Router()
 
@@ -30,15 +28,6 @@ async def cmd_help(message: Message):
                          reply_markup=ReplyKeyboardRemove())
 
 
-@router.callback_query(F.data == 'admin')
-async def admin_panel(callback: CallbackQuery):
-    id_user = callback.from_user.id
-    if id_user in ID_ADMIN:
-        await callback.message.edit_text('Вы вошли как администратор',
-                                      reply_markup=kb_admin)
-    else:
-        await callback.message.edit_text('У вас нет доступа к ресурсам')
-
 
 @router.callback_query(F.data == 'start')
 async def callback_start(callback: CallbackQuery):
@@ -51,21 +40,20 @@ async def callback_start(callback: CallbackQuery):
 @router.callback_query(F.data == 'catalog')
 async def catalog(callback: CallbackQuery):
     await callback.answer('')
-    await callback.message.edit_text('Выберете категорию товара',
+    await callback.message.edit_text('Выберите категорию товара',
                                      reply_markup=await kb.categories())
 
 
 @router.callback_query(F.data.startswith('category_'))
 async def category(callback: CallbackQuery):
     await callback.answer('')
-    await callback.message.edit_text('Выберете товар по категории',
+    await callback.message.edit_text('Выберите товар по категории',
                                      reply_markup=await kb.get_items(callback.data.split('_')[1]))
 
 
 @router.callback_query(F.data.startswith('item_'))
 async def item_hendler(callback: CallbackQuery):
     item = await get_item(callback.data.split('_')[1])
-    print(f'результат-{callback.data.split('_')[1]}___{callback.data.split('_')[0]}')
     await callback.answer('')
     await callback.message.edit_text(f'{item.name}\n\n{item.description}\n\nЦена: {item.price}',
                                   reply_markup=await kb.back_category(item.category))
@@ -99,13 +87,5 @@ async def add_user(message: Message, state: FSMContext):
 
     await state.clear()
     await message.answer("Регистрация завершена успешно! ✅")
-    await state.clear()
 
 
-@router.callback_query(F.data == 'all_users')
-async def all_users(callback: CallbackQuery):
-    await callback.answer()
-    users = await get_all_user()
-    for user in users:
-        await callback.message.answer(f'Имя пользователя: {user}')
-    await callback.message.answer(f'Всего {len(users)} пользователей')

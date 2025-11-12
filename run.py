@@ -5,6 +5,7 @@ from aiogram import Bot, Dispatcher
 
 from config import TOKEN
 from app.hendlers import router
+from app.admins.admin_hendlers import admin_router
 from app.database.models import async_main #, add_columns_to_users
 
 async def main():
@@ -13,6 +14,7 @@ async def main():
     bot = Bot(token=TOKEN)
     dp = Dispatcher()
     dp.include_router(router)
+    dp.include_router(admin_router)
     await dp.start_polling(bot)
 
 if __name__ == '__main__':

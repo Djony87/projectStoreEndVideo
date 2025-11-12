@@ -6,7 +6,28 @@ async def set_user(tg_id: int, user_name: str, user_soname: str, phone_number: s
         user = await session.scalar(select(User).where(User.tg_id == tg_id))
 
         if not user:
-            session.add(User(tg_id = tg_id, user_name = user_name, user_soname = user_soname, phone_number = phone_number))
+            session.add(User(tg_id = tg_id,
+                             user_name = user_name,
+                             user_soname = user_soname,
+                             phone_number = phone_number))
+            await session.commit()
+#-------Функция-запрос добавления в нового товара в базу данных
+async def set_item(category: int, name: str, description: str, price: int, photo: str):
+    async with async_session() as session:
+
+        # Проверяем, существует ли уже такой товар
+        item = await session.scalar(select(Item).where(Item.name == name and Item.price == price))
+
+        if not item:
+            # Создаем объект Item и передаем параметры в конструктор
+            new_item = Item(
+                category=category,
+                name=name,
+                description=description,
+                price=price,
+                photo=photo
+            )
+            session.add(new_item)
             await session.commit()
 
 
