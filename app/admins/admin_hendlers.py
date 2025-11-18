@@ -3,8 +3,12 @@ from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
-from app.admins.admin_keyboadrs import kb_admin, admin_categories
-from app.database.requests import get_all_user, set_item
+from app.admins.admin_keyboadrs import (kb_admin,
+                                        admin_keyboards_add_item,
+                                        admin_keyboards_delete_item,
+                                        admin_delete_keyboard_back,
+                                        admin_keyboards_all_item)
+from app.database.requests import get_all_user, set_item, get_item
 from config import ID_ADMIN
 
 
@@ -37,18 +41,17 @@ async def all_users(callback: CallbackQuery):
         await callback.message.answer(f'Имя пользователя: {user}')
     await callback.message.answer(f'Всего {len(users)} пользователей')
 
-# -------хендлеры для доавления нового товара
+# -------хендлеры для добавления нового товара
 
 @admin_router.callback_query(F.data == 'add_item')
 async def addition(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await state.set_state(AddItem.category)
     await callback.message.answer('Выберите категорию товара',
-                                  reply_markup=await admin_categories())
+                                  reply_markup=await admin_keyboards_add_item())
 
 @admin_router.callback_query(F.data.startswith('addCategory_'))
-async def add_categori(callback: CallbackQuery, state: FSMContext):
-    print(callback.data.split('_')[1])
+async def add_category(callback: CallbackQuery, state: FSMContext):
     await state.update_data(category=callback.data.split('_')[1])
     await state.set_state(AddItem.name)
     await callback.message.answer('Введите наименование товара')
@@ -85,3 +88,28 @@ async def add_name(message: Message, state: FSMContext):
         photo = iten_data['photo']
     )
     await state.clear()
+#-----------------------------------------------------------------
+
+
+# --------хендлер для удаления товара
+@admin_router.callback_query(F.data == 'delete_item')
+async def deleteItem(callback: CallbackQuery):
+    await callback.answer('')
+    await callback.message.edit_text('Выберите категорию товар.',
+                                     reply_markup = await admin_keyboards_delete_item())
+
+
+@admin_router.callback_query(F.data.startswith('deleteCategory_'))
+async def one_delete(callback: CallbackQuery):
+    await callback.answer('')
+    await callback.message.edit_text('Выберете товар',
+                                     reply_markup= await admin_keyboards_all_item(callback.data.split('_')[1]))
+
+
+@admin_router.callback_query(F.data.startswith('deleteItem_'))
+async def two_delete(callback: CallbackQuery):
+    delete = await get_item(callback.data.split('_')[1])
+    await callback.answer('')
+    await callback.message.edit_text(f'{delete.name}\n\n{delete.description}\n\nЦена: {delete.price}',
+                                     reply_markup = await admin_delete_keyboard_back(delete.category))
+
