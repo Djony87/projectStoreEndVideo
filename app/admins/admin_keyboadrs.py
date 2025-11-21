@@ -3,6 +3,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app.database.requests import get_categories, get_item_by_category
 
+
+#----------Клавиатура для панели АДМИНИСТРАТОРА----------
 kb_admin = InlineKeyboardMarkup(inline_keyboard=[
     [
         InlineKeyboardButton(text='Добавить товар', callback_data='add_item'),
@@ -14,15 +16,20 @@ kb_admin = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text='Назад', callback_data='start')
     ]
 ])
+# ---------------------------------------------------------
 
+
+# ---------------Фунция-клавиатура для добавления товара
 async def admin_keyboards_add_item():
     all_categories = await get_categories()
     keyboard = InlineKeyboardBuilder()
     for category in all_categories:
         keyboard.row(InlineKeyboardButton(text=category.name, callback_data=f'addCategory_{category.id}'))
     return keyboard.as_markup()
+# ---------------------------------------------------------
 
 
+# ------------------Функция для удаления товара
 async def admin_keyboards_delete_item():
     all_categories = await get_categories()
     keyboard = InlineKeyboardBuilder()
@@ -41,4 +48,13 @@ async def admin_keyboards_all_item(category_id):
 
 
 async def admin_delete_keyboard_back(category_id):
-    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Назад', callback_data=f'deleteCategory_{category_id}')]])
+    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Удалить', callback_data='delete_position')],
+                                                 [InlineKeyboardButton(text='Назад',
+                                                                       callback_data=f'deleteCategory_{category_id}')]
+                                                 ])
+
+
+
+
+
+# -----------------------------------------------------------

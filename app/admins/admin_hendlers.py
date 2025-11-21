@@ -8,7 +8,7 @@ from app.admins.admin_keyboadrs import (kb_admin,
                                         admin_keyboards_delete_item,
                                         admin_delete_keyboard_back,
                                         admin_keyboards_all_item)
-from app.database.requests import get_all_user, set_item, get_item
+from app.database.requests import get_all_user, set_item, get_item, delete_position
 from config import ID_ADMIN
 
 
@@ -22,6 +22,9 @@ class AddItem(StatesGroup):
     price = State()
     photo = State()
 
+
+class DeleteState(StatesGroup):
+    warning_for_confirmation = State()
 
 @admin_router.callback_query(F.data == 'admin')
 async def admin_panel(callback: CallbackQuery):
@@ -100,16 +103,27 @@ async def deleteItem(callback: CallbackQuery):
 
 
 @admin_router.callback_query(F.data.startswith('deleteCategory_'))
-async def one_delete(callback: CallbackQuery):
+async def one_delete(callback: CallbackQuery, state: FSMContext):
     await callback.answer('')
     await callback.message.edit_text('Выберете товар',
                                      reply_markup= await admin_keyboards_all_item(callback.data.split('_')[1]))
+    await state.clear()
 
 
 @admin_router.callback_query(F.data.startswith('deleteItem_'))
-async def two_delete(callback: CallbackQuery):
+async def two_delete(callback: CallbackQuery, state: FSMContext):
     delete = await get_item(callback.data.split('_')[1])
     await callback.answer('')
     await callback.message.edit_text(f'{delete.name}\n\n{delete.description}\n\nЦена: {delete.price}',
                                      reply_markup = await admin_delete_keyboard_back(delete.category))
 
+    await state.update_data(delete_line = delete.id)
+
+
+@admin_router.callback_query(F.data == 'delete_position')
+async def free_delete(callback: CallbackQuery, state: FSMContext):
+    await callback.answer('')
+    data = await state.get_data()
+    delete_line = data.get('delete_line')
+    await delete_position(delete_line)
+    await state.clear()

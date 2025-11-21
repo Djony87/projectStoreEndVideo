@@ -49,3 +49,12 @@ async def get_all_user():
     async with async_session() as session:
         result =  await session.scalars(select(User.user_name))
         return result.all()
+
+
+async def delete_position(item_id):
+    async with async_session() as session:
+        stmt = delete(Item).where(Item.id == item_id)
+        result = await session.execute(stmt)
+        await session.commit()  # Теперь коммит работает
+        return result.rowcount > 0
+
