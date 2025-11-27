@@ -38,7 +38,16 @@ class Item(Base):
     name: Mapped[str] = mapped_column(String(25))
     description: Mapped[str] = mapped_column(String(512))
     price: Mapped[int]
+    count: Mapped[int]
     photo: Mapped[str] = mapped_column(String(512), nullable=True)
+
+
+class Cart(Base):
+    __tablename__ = 'cart'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    tg_id: Mapped[int] = mapped_column(ForeignKey('users.tg_id'))
+    item_id: Mapped[int] = mapped_column(ForeignKey('items.id'))
 
 
 async def async_main():
@@ -50,7 +59,7 @@ async def async_main():
 #     async with engine.begin() as conn:
 #         await conn.execute(text("""
 #             ALTER TABLE items
-#             ADD COLUMN photo VARCHAR(512)
+#             ADD COLUMN count VARCHAR(5)
 #         """))
         # await conn.execute(text("""
         #     ALTER TABLE users

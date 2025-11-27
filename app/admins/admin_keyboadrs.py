@@ -26,6 +26,9 @@ async def admin_keyboards_add_item():
     for category in all_categories:
         keyboard.row(InlineKeyboardButton(text=category.name, callback_data=f'addCategory_{category.id}'))
     return keyboard.as_markup()
+
+kb_product_addad = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Готово',
+                                                                              callback_data='admin')]])
 # ---------------------------------------------------------
 
 
@@ -52,9 +55,9 @@ async def admin_delete_keyboard_back(category_id):
                                                  [InlineKeyboardButton(text='Назад',
                                                                        callback_data=f'deleteCategory_{category_id}')]
                                                  ])
-
-
-
+async def back_button_after_deletion(item_id):
+    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Назад',
+                                                                       callback_data=f'deleteCategory_{item_id}')]])
 
 
 # -----------------------------------------------------------

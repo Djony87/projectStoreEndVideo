@@ -7,7 +7,9 @@ from app.admins.admin_keyboadrs import (kb_admin,
                                         admin_keyboards_add_item,
                                         admin_keyboards_delete_item,
                                         admin_delete_keyboard_back,
-                                        admin_keyboards_all_item)
+                                        admin_keyboards_all_item,
+                                        kb_product_addad,
+                                        back_button_after_deletion)
 from app.database.requests import get_all_user, set_item, get_item, delete_position
 from config import ID_ADMIN
 
@@ -21,6 +23,7 @@ class AddItem(StatesGroup):
     description = State()
     price = State()
     photo = State()
+    count = State()
 
 
 class DeleteState(StatesGroup):
@@ -66,20 +69,27 @@ async def add_name(message: Message, state: FSMContext):
     await message.answer('Введите описание товара')
 
 @admin_router.message(AddItem.description)
-async def add_name(message: Message, state: FSMContext):
+async def add_discription(message: Message, state: FSMContext):
     await state.update_data(description=message.text)
     await state.set_state(AddItem.price)
     await message.answer('Введите цену товара')
 
 @admin_router.message(AddItem.price)
-async def add_name(message: Message, state: FSMContext):
+async def add_price(message: Message, state: FSMContext):
     await state.update_data(price=message.text)
     await state.set_state(AddItem.photo)
     await message.answer('Вставьте фото')
 
+
 @admin_router.message(AddItem.photo)
-async def add_name(message: Message, state: FSMContext):
+async def add_photo(message: Message, state: FSMContext):
     await state.update_data(photo=message.photo[1].file_id)
+    await state.set_state(AddItem.count)
+    await message.answer('Введите колличество')
+
+@admin_router.message(AddItem.count)
+async def add_count(message: Message, state: FSMContext):
+    await state.update_data(count=message.text)
 
     iten_data = await state.get_data()
 
@@ -88,9 +98,11 @@ async def add_name(message: Message, state: FSMContext):
         name = iten_data['name'],
         description = iten_data['description'],
         price = iten_data['price'],
-        photo = iten_data['photo']
+        photo = iten_data['photo'],
+        count = iten_data['count']
     )
     await state.clear()
+    await message.answer('Товар добавлен', reply_markup=kb_product_addad)
 #-----------------------------------------------------------------
 
 
@@ -109,7 +121,6 @@ async def one_delete(callback: CallbackQuery, state: FSMContext):
                                      reply_markup= await admin_keyboards_all_item(callback.data.split('_')[1]))
     await state.clear()
 
-
 @admin_router.callback_query(F.data.startswith('deleteItem_'))
 async def two_delete(callback: CallbackQuery, state: FSMContext):
     delete = await get_item(callback.data.split('_')[1])
@@ -125,5 +136,8 @@ async def free_delete(callback: CallbackQuery, state: FSMContext):
     await callback.answer('')
     data = await state.get_data()
     delete_line = data.get('delete_line')
+    index = await get_item(delete_line)
     await delete_position(delete_line)
     await state.clear()
+    await callback.message.answer('Удаленно',
+                                  reply_markup = await back_button_after_deletion(index.category))

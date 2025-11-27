@@ -1,3 +1,5 @@
+from itertools import count
+
 from app.database.models import async_session, User, Item, Category
 from sqlalchemy import select, update, delete
 
@@ -12,7 +14,7 @@ async def set_user(tg_id: int, user_name: str, user_soname: str, phone_number: s
                              phone_number = phone_number))
             await session.commit()
 #-------Функция-запрос добавления в нового товара в базу данных
-async def set_item(category: int, name: str, description: str, price: int, photo: str):
+async def set_item(category: int, name: str, description: str, price: int, photo: str, count: str):
     async with async_session() as session:
 
         # Проверяем, существует ли уже такой товар
@@ -25,7 +27,8 @@ async def set_item(category: int, name: str, description: str, price: int, photo
                 name=name,
                 description=description,
                 price=price,
-                photo=photo
+                photo=photo,
+                count=count
             )
             session.add(new_item)
             await session.commit()
