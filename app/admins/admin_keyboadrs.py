@@ -25,6 +25,7 @@ async def admin_keyboards_add_item():
     keyboard = InlineKeyboardBuilder()
     for category in all_categories:
         keyboard.row(InlineKeyboardButton(text=category.name, callback_data=f'addCategory_{category.id}'))
+    keyboard.row(InlineKeyboardButton(text='Назад', callback_data='admin'))
     return keyboard.as_markup()
 
 kb_product_addad = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Готово',

@@ -5,9 +5,9 @@ from app.database.requests import get_categories, get_item_by_category
 
 kb_start = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Каталог', callback_data='catalog')],
+    [InlineKeyboardButton(text='Корзина', callback_data='cart')],
     [InlineKeyboardButton(text='Зарегестрироваться', callback_data='reg')],
-    [InlineKeyboardButton(text='Контакты', callback_data='contacts')],
-    [InlineKeyboardButton(text='Администратор', callback_data='admin')]
+    [InlineKeyboardButton(text='Контакты', callback_data='contacts')]
 ])
 
 
@@ -30,4 +30,6 @@ async def get_items(category_id):
 
 
 async def back_category(category_id):
-    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Назад.", callback_data=f'category_{category_id}')]])
+    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Назад.", callback_data=f'category_{category_id}')],
+                                                [InlineKeyboardButton(text='В корзину', callback_data=f'cart_{category_id}')]])
+

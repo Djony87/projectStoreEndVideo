@@ -1,6 +1,5 @@
-from itertools import count
 
-from app.database.models import async_session, User, Item, Category
+from app.database.models import async_session, User, Item, Category, Cart
 from sqlalchemy import select, update, delete
 
 async def set_user(tg_id: int, user_name: str, user_soname: str, phone_number: str):
@@ -61,3 +60,8 @@ async def delete_position(item_id):
         await session.commit()  # Теперь коммит работает
         return result.rowcount > 0
 
+async def get_added_item_catt(tg_id:int, item_id=int):
+    async with async_session() as session:
+        session.add(Cart(tg_id=tg_id,
+                    item_id=item_id))
+        await session.commit()

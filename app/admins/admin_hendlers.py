@@ -1,7 +1,12 @@
+import os
+from os.path import split
+
 from aiogram import F, Router
+from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
+from dotenv import load_dotenv
 
 from app.admins.admin_keyboadrs import (kb_admin,
                                         admin_keyboards_add_item,
@@ -11,10 +16,10 @@ from app.admins.admin_keyboadrs import (kb_admin,
                                         kb_product_addad,
                                         back_button_after_deletion)
 from app.database.requests import get_all_user, set_item, get_item, delete_position
-from config import ID_ADMIN
 
 
 admin_router = Router()
+load_dotenv()
 
 
 class AddItem(StatesGroup):
@@ -26,17 +31,29 @@ class AddItem(StatesGroup):
     count = State()
 
 
+
+
+
 class DeleteState(StatesGroup):
     warning_for_confirmation = State()
+
+@admin_router.message(Command('admin'))
+async def admin_panel(message: Message):
+    id_user = message.from_user.id
+    if id_user in list(map(int, os.getenv('ID_ADMIN', '').split(','))):
+        await message.answer('Вы вошли как администратор',
+                                      reply_markup=kb_admin)
+    else:
+        await message.answer('У вас нет доступа к ресурсам')
 
 @admin_router.callback_query(F.data == 'admin')
 async def admin_panel(callback: CallbackQuery):
     id_user = callback.from_user.id
-    if id_user in ID_ADMIN:
-        await callback.message.edit_text('Вы вошли как администратор',
+    if id_user in list(map(int, os.getenv('ID_ADMIN', '').split(','))):
+        await callback.message.answer('Вы вошли как администратор',
                                       reply_markup=kb_admin)
     else:
-        await callback.message.edit_text('У вас нет доступа к ресурсам')
+        await callback.message.answer('У вас нет доступа к ресурсам')
 
 
 @admin_router.callback_query(F.data == 'all_users')

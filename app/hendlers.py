@@ -4,8 +4,9 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
+
 import app.keyboards  as kb
-from app.database.requests import set_user, get_item
+from app.database.requests import set_user, get_item, get_added_item_catt
 
 router = Router()
 
@@ -14,6 +15,13 @@ class Reg(StatesGroup):
     user_name = State()
     user_soname = State()
     phone_number = State()
+
+
+class AddItemCart(StatesGroup):
+    id = State()
+    tg_id = State()
+    item_id = State()
+
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
@@ -89,3 +97,19 @@ async def add_user(message: Message, state: FSMContext):
     await message.answer("Регистрация завершена успешно! ✅")
 
 
+@router.callback_query(F.data.startswith('cart_'))
+async def added_cart(callback: CallbackQuery, state: FSMContext):
+    await callback.answer('')
+    await state.set_state(AddItemCart.tg_id)
+    await state.update_data(tg_id=callback.from_user.id)
+    await state.set_state(AddItemCart.item_id)
+    await state.update_data(item_id=callback.data.split('_')[1])
+
+    data = await state.get_data()
+
+    await  get_added_item_catt(
+        tg_id=data['tg_id'],
+        item_id=data['item_id']
+    )
+    await state.clear()
+    await callback.message.answer(f'Товар добавлен в корзину')
