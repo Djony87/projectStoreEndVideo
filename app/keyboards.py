@@ -4,10 +4,10 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from app.database.requests import get_categories, get_item_by_category
 
 kb_start = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Каталог', callback_data='catalog')],
-    [InlineKeyboardButton(text='Корзина', callback_data='cart')],
-    [InlineKeyboardButton(text='Зарегестрироваться', callback_data='reg')],
-    [InlineKeyboardButton(text='Контакты', callback_data='contacts')]
+    [InlineKeyboardButton(text='Каталог', callback_data='catalog'),
+    InlineKeyboardButton(text='Корзина', callback_data='cart')],
+    [InlineKeyboardButton(text='Зарегестрироваться', callback_data='reg'),
+    InlineKeyboardButton(text='Контакты', callback_data='contacts')]
 ])
 
 

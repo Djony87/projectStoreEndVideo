@@ -6,7 +6,10 @@ from aiogram.fsm.context import FSMContext
 
 
 import app.keyboards  as kb
-from app.database.requests import set_user, get_item, get_added_item_catt
+from app.database.requests import (
+    set_user, get_item,
+    get_added_item_catt,
+    user_shopping_cart)
 
 router = Router()
 
@@ -43,6 +46,20 @@ async def callback_start(callback: CallbackQuery):
     await callback.message.edit_text(f'Вас приветствует приевествует бот \n'
                                      f'интернет-магазина одежды.',
                                      reply_markup=kb.kb_start)
+
+
+@router.callback_query(F.data == 'cart')
+async def item_in_cart(callback: CallbackQuery):
+    await callback.answer('')
+    all_items_in_cart = await user_shopping_cart(callback.from_user.id)
+    print(all_items_in_cart)
+    for item in all_items_in_cart:
+        try:
+            await callback.message.answer_photo(photo=item[0])
+        except:
+            pass
+        await callback.message.answer(f'{item[1]}\n'
+                                      f'{item[2]}')
 
 
 @router.callback_query(F.data == 'catalog')
